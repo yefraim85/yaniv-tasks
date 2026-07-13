@@ -264,6 +264,93 @@ ul.task-list li .del-btn:hover {
 }
 .site-footer a { color: var(--color-text-muted); }
 .site-footer a:hover { color: var(--color-accent-dark); }
+
+.topbar-actions { display: flex; align-items: center; gap: 8px; }
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  color: var(--color-text);
+  font-size: 1rem;
+  cursor: pointer;
+}
+.icon-btn:hover { background: var(--color-accent-soft); }
+
+.sync-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+.sync-pill .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-text-muted);
+  flex-shrink: 0;
+}
+.sync-pill.state-synced .dot { background: #6fae6f; }
+.sync-pill.state-saving .dot { background: var(--color-accent); animation: pulse 1s infinite ease-in-out; }
+.sync-pill.state-offline .dot { background: var(--color-text-muted); }
+.sync-pill.state-error .dot { background: #c85c5c; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+.settings-panel {
+  margin-bottom: 22px;
+  padding: 18px 20px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+.settings-panel[hidden] { display: none; }
+.settings-panel h2 {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  margin: 0 0 8px;
+}
+.settings-panel p {
+  margin: 0 0 12px;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+.settings-panel .token-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.settings-panel input[type="password"] {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-alt);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+}
+.settings-panel input[type="password"]:focus { outline: none; border-color: var(--color-accent); }
+.settings-panel .btn-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.settings-panel button {
+  padding: 9px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-alt);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.settings-panel button.primary { background: var(--color-accent); border-color: var(--color-accent); color: #fff; }
+.settings-panel button.primary:hover { background: var(--color-accent-dark); }
+.settings-panel button:hover { background: var(--color-accent-soft); }
 </style>
 </head>
 <body>
@@ -272,7 +359,10 @@ ul.task-list li .del-btn:hover {
 
   <div class="topbar">
     <a class="brand" href="https://yefraim85.github.io/yaniv-efraim-kb/index.html">יניב אפרים <small>מאגר ידע אישי</small></a>
-    <button type="button" class="theme-toggle" id="theme-toggle" aria-pressed="false">☀️ <span>מצב בהיר</span></button>
+    <div class="topbar-actions">
+      <button type="button" class="icon-btn" id="settings-toggle" aria-label="הגדרות סנכרון" aria-pressed="false">⚙️</button>
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-pressed="false">☀️ <span>מצב בהיר</span></button>
+    </div>
   </div>
 
   <header class="article-header">
@@ -280,6 +370,7 @@ ul.task-list li .del-btn:hover {
     <h1>רשימת משימות לאתר</h1>
     <div class="article-meta">
       <span id="updated-label">עודכן לאחרונה 6 ביולי 2026</span>
+      <span class="sync-pill" id="sync-pill"><span class="dot"></span><span id="sync-label">בודק סנכרון...</span></span>
     </div>
   </header>
 
@@ -288,6 +379,25 @@ ul.task-list li .del-btn:hover {
       כאן ארשום דברים שאני רוצה להוסיף או לשנות במאגר — לא תוכן לקוראים,
       רק פתק עבודה לעצמי.
     </p>
+
+    <div class="settings-panel" id="settings-panel" hidden>
+      <h2>סנכרון בין מכשירים</h2>
+      <p>
+        המשימות נקראות תמיד מהריפו הציבורי <code>yefraim85/yaniv-tasks</code> ב-GitHub.
+        כדי שגם הכתיבה (הוספה / סימון / מחיקה) תסתנכרן משם, הדביקו כאן
+        <strong>Fine-grained Personal Access Token</strong> עם הרשאת
+        <strong>Contents: Read and write</strong> על הריפו הזה בלבד.
+        הטוקן נשמר רק בדפדפן הזה (localStorage) ונשלח רק ל-api.github.com.
+      </p>
+      <div class="token-row">
+        <input type="password" id="token-input" placeholder="הדביקו כאן GitHub token" autocomplete="off">
+      </div>
+      <div class="btn-row">
+        <button type="button" class="primary" id="token-save">שמירת טוקן</button>
+        <button type="button" id="token-clear">ניתוק</button>
+        <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">יצירת טוקן חדש ↗</a>
+      </div>
+    </div>
 
     <form class="add-row" id="add-form">
       <input type="text" id="new-task" placeholder="הוסיפו משימה חדשה..." autocomplete="off">
@@ -304,7 +414,7 @@ ul.task-list li .del-btn:hover {
   </main>
 
   <footer class="site-footer">
-    <span>עמוד עצמאי, מבוסס על דף המשימות ב<a href="https://yefraim85.github.io/yaniv-efraim-kb/tasks/index.html">מאגר הידע האישי</a>. המשימות נשמרות בדפדפן הזה בלבד.</span>
+    <span>עמוד עצמאי, מבוסס על דף המשימות ב<a href="https://yefraim85.github.io/yaniv-efraim-kb/tasks/index.html">מאגר הידע האישי</a>. המשימות מסתנכרנות דרך <a href="https://github.com/yefraim85/yaniv-tasks">הריפו yaniv-tasks</a> ב-GitHub.</span>
   </footer>
 
 </div>
@@ -313,9 +423,16 @@ ul.task-list li .del-btn:hover {
 (function () {
   var STORAGE_KEY = 'yaniv-tasks-v1';
   var UPDATED_KEY = 'yaniv-tasks-updated';
+  var TOKEN_KEY = 'yaniv-tasks-gh-token';
   var DEFAULT_TASKS = [
     { text: 'לדוגמה: לכתוב את הכתבה הראשונה בקטגוריית "פיתוח אישי"', done: false }
   ];
+
+  var GH_OWNER = 'yefraim85';
+  var GH_REPO = 'yaniv-tasks';
+  var GH_PATH = 'tasks.json';
+  var GH_BRANCH = 'main';
+  var GH_API_URL = 'https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/' + GH_PATH;
 
   var listEl = document.getElementById('task-list');
   var emptyEl = document.getElementById('empty-state');
@@ -324,6 +441,13 @@ ul.task-list li .del-btn:hover {
   var formEl = document.getElementById('add-form');
   var inputEl = document.getElementById('new-task');
   var updatedEl = document.getElementById('updated-label');
+  var syncPillEl = document.getElementById('sync-pill');
+  var syncLabelEl = document.getElementById('sync-label');
+  var settingsToggle = document.getElementById('settings-toggle');
+  var settingsPanel = document.getElementById('settings-panel');
+  var tokenInput = document.getElementById('token-input');
+  var tokenSaveBtn = document.getElementById('token-save');
+  var tokenClearBtn = document.getElementById('token-clear');
 
   function loadTasks() {
     try {
@@ -333,11 +457,11 @@ ul.task-list li .del-btn:hover {
     return DEFAULT_TASKS.slice();
   }
 
-  function saveTasks(tasks) {
+  function persistLocal(tasks, timestamp) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-    var now = new Date();
-    localStorage.setItem(UPDATED_KEY, now.toISOString());
-    renderUpdated(now);
+    var date = timestamp ? new Date(timestamp) : new Date();
+    localStorage.setItem(UPDATED_KEY, date.toISOString());
+    renderUpdated(date);
   }
 
   var HEB_MONTHS = ['בינואר', 'בפברואר', 'במרץ', 'באפריל', 'במאי', 'ביוני', 'ביולי', 'באוגוסט', 'בספטמבר', 'באוקטובר', 'בנובמבר', 'בדצמבר'];
@@ -352,7 +476,31 @@ ul.task-list li .del-btn:hover {
     }
   }
 
+  function getToken() {
+    try { return localStorage.getItem(TOKEN_KEY) || ''; } catch (e) { return ''; }
+  }
+
+  function setSyncState(state, text) {
+    syncPillEl.className = 'sync-pill state-' + state;
+    syncLabelEl.textContent = text;
+  }
+
+  function b64EncodeUnicode(str) {
+    return btoa(unescape(encodeURIComponent(str)));
+  }
+  function b64DecodeUnicode(str) {
+    return decodeURIComponent(escape(atob(str.replace(/\n/g, ''))));
+  }
+
+  function authHeaders() {
+    var headers = { 'Accept': 'application/vnd.github+json' };
+    var token = getToken();
+    if (token) headers['Authorization'] = 'token ' + token;
+    return headers;
+  }
+
   var tasks = loadTasks();
+  var suppressNextRemoteEcho = false;
 
   function render() {
     listEl.innerHTML = '';
@@ -369,7 +517,7 @@ ul.task-list li .del-btn:hover {
         check.textContent = task.done ? '✓' : '';
         check.addEventListener('click', function () {
           tasks[idx].done = !tasks[idx].done;
-          saveTasks(tasks);
+          commitChange(tasks);
           render();
         });
 
@@ -384,7 +532,7 @@ ul.task-list li .del-btn:hover {
         del.textContent = '✕';
         del.addEventListener('click', function () {
           tasks.splice(idx, 1);
-          saveTasks(tasks);
+          commitChange(tasks);
           render();
         });
 
@@ -405,14 +553,14 @@ ul.task-list li .del-btn:hover {
     var val = inputEl.value.trim();
     if (!val) return;
     tasks.push({ text: val, done: false });
-    saveTasks(tasks);
+    commitChange(tasks);
     inputEl.value = '';
     render();
   });
 
   clearBtn.addEventListener('click', function () {
     tasks = tasks.filter(function (t) { return !t.done; });
-    saveTasks(tasks);
+    commitChange(tasks);
     render();
   });
 
@@ -439,8 +587,113 @@ ul.task-list li .del-btn:hover {
     try { localStorage.setItem('kb-theme', next); } catch (e) {}
   });
 
+  // ---- GitHub sync -------------------------------------------------------
+
+  var syncTimer = null;
+  var syncInFlight = false;
+  var syncQueued = false;
+
+  function commitChange(nextTasks) {
+    persistLocal(nextTasks);
+    if (syncTimer) clearTimeout(syncTimer);
+    syncTimer = setTimeout(function () { pushRemote(nextTasks); }, 900);
+  }
+
+  function pushRemote(pushTasks) {
+    var token = getToken();
+    if (!token) {
+      setSyncState('offline', 'לא מחובר לסנכרון — נשמר במכשיר זה בלבד');
+      return;
+    }
+    if (syncInFlight) { syncQueued = true; return; }
+    syncInFlight = true;
+    setSyncState('saving', 'שומר ל-GitHub...');
+
+    fetch(GH_API_URL + '?ref=' + GH_BRANCH, { headers: authHeaders() })
+      .then(function (resp) { return resp.ok ? resp.json() : null; })
+      .then(function (existing) {
+        var payload = { tasks: pushTasks, updatedAt: new Date().toISOString() };
+        var body = {
+          message: 'עדכון משימות',
+          content: b64EncodeUnicode(JSON.stringify(payload, null, 2)),
+          branch: GH_BRANCH
+        };
+        if (existing && existing.sha) body.sha = existing.sha;
+        return fetch(GH_API_URL, {
+          method: 'PUT',
+          headers: authHeaders(),
+          body: JSON.stringify(body)
+        });
+      })
+      .then(function (resp) {
+        if (!resp.ok) throw new Error('push failed: ' + resp.status);
+        setSyncState('synced', 'מסונכרן עם GitHub');
+      })
+      .catch(function () {
+        setSyncState('error', 'שגיאת סנכרון — ננסה שוב בעדכון הבא');
+      })
+      .then(function () {
+        syncInFlight = false;
+        if (syncQueued) {
+          syncQueued = false;
+          pushRemote(tasks);
+        }
+      });
+  }
+
+  function pullRemote() {
+    var token = getToken();
+    setSyncState('saving', 'טוען משימות מ-GitHub...');
+    fetch(GH_API_URL + '?ref=' + GH_BRANCH, { headers: authHeaders() })
+      .then(function (resp) {
+        if (!resp.ok) throw new Error('pull failed: ' + resp.status);
+        return resp.json();
+      })
+      .then(function (data) {
+        var decoded = b64DecodeUnicode(data.content);
+        var parsed = JSON.parse(decoded);
+        if (parsed && Array.isArray(parsed.tasks)) {
+          tasks = parsed.tasks;
+          persistLocal(tasks, parsed.updatedAt);
+          render();
+        }
+        setSyncState('synced', token ? 'מסונכרן עם GitHub' : 'נקרא מ-GitHub (צפייה בלבד)');
+      })
+      .catch(function () {
+        setSyncState(token ? 'error' : 'offline', token ? 'שגיאת סנכרון' : 'לא ניתן לטעון מ-GitHub — מוצגים נתונים מקומיים');
+      });
+  }
+
+  // ---- Settings panel ------------------------------------------------------
+
+  settingsToggle.addEventListener('click', function () {
+    var isOpen = !settingsPanel.hidden;
+    settingsPanel.hidden = isOpen;
+    settingsToggle.setAttribute('aria-pressed', String(!isOpen));
+    if (!isOpen) tokenInput.focus();
+  });
+
+  tokenSaveBtn.addEventListener('click', function () {
+    var val = tokenInput.value.trim();
+    if (!val) return;
+    try { localStorage.setItem(TOKEN_KEY, val); } catch (e) {}
+    tokenInput.value = '';
+    settingsPanel.hidden = true;
+    settingsToggle.setAttribute('aria-pressed', 'false');
+    pushRemote(tasks);
+  });
+
+  tokenClearBtn.addEventListener('click', function () {
+    try { localStorage.removeItem(TOKEN_KEY); } catch (e) {}
+    tokenInput.value = '';
+    setSyncState('offline', 'לא מחובר לסנכרון — נשמר במכשיר זה בלבד');
+  });
+
+  if (getToken()) tokenInput.placeholder = 'טוקן מחובר (הדביקו כדי להחליף)';
+
   initUpdated();
   render();
+  pullRemote();
 })();
 </script>
 
