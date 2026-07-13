@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<script>(function(){try{if(localStorage.getItem("kb-theme")==="light"){document.documentElement.setAttribute("data-theme","light");}}catch(e){}})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>רשימת משימות — יניב אפרים</title>
+<meta name="description" content="משימות אישיות לדברים שצריך להוסיף למאגר הידע — עמוד עצמאי.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;600;700&family=Assistant:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --color-bg: #1c1815;
+  --color-bg-alt: #262019;
+  --color-surface: #221d18;
+  --color-text: #f1e9dd;
+  --color-text-muted: #a89a8a;
+  --color-border: #3c352c;
+  --color-accent: #e08a5f;
+  --color-accent-dark: #f0a878;
+  --color-accent-soft: #3a2a20;
+
+  --font-serif: 'Frank Ruhl Libre', 'Times New Roman', serif;
+  --font-sans: 'Assistant', 'Segoe UI', Tahoma, sans-serif;
+
+  --max-width: 720px;
+  --radius: 10px;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.25), 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+:root[data-theme="light"] {
+  --color-bg: #faf7f2;
+  --color-bg-alt: #f1ebe0;
+  --color-surface: #ffffff;
+  --color-text: #2b2620;
+  --color-text-muted: #6b6255;
+  --color-border: #e3dac9;
+  --color-accent: #a45c40;
+  --color-accent-dark: #7c4530;
+  --color-accent-soft: #f0e0d3;
+  --shadow: 0 1px 3px rgba(43, 38, 32, 0.06), 0 6px 20px rgba(43, 38, 32, 0.05);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.wrap {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+h1 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--color-text);
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  margin: 6px 0 14px;
+}
+
+.eyebrow {
+  display: inline-block;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--color-accent-dark);
+  margin-bottom: 10px;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 0;
+}
+.brand {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--color-text);
+  text-decoration: none;
+}
+.brand small {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--color-accent-dark);
+  margin-top: 2px;
+}
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.theme-toggle:hover { background: var(--color-accent-soft); }
+
+.article-header {
+  padding: 24px 0 28px;
+  border-bottom: 1px solid var(--color-border);
+}
+.article-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+main { padding: 32px 0 20px; }
+
+main > p.intro {
+  margin: 0 0 24px;
+  color: var(--color-text-muted);
+}
+
+.add-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+.add-row input[type="text"] {
+  flex: 1;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+}
+.add-row input[type="text"]:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+.add-row button {
+  padding: 0 20px;
+  border-radius: 8px;
+  border: none;
+  background: var(--color-accent);
+  color: #fff;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.add-row button:hover { background: var(--color-accent-dark); }
+
+ul.task-list {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+}
+ul.task-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+ul.task-list li .check {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  margin-top: 2px;
+  border: 2px solid var(--color-border);
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent);
+  font-size: 0.85rem;
+  background: var(--color-bg-alt);
+}
+ul.task-list li.done .check {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #fff;
+}
+ul.task-list li .task-text {
+  flex: 1;
+  word-break: break-word;
+}
+ul.task-list li.done .task-text {
+  text-decoration: line-through;
+  color: var(--color-text-muted);
+}
+ul.task-list li .del-btn {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 6px;
+}
+ul.task-list li .del-btn:hover {
+  color: var(--color-accent-dark);
+  background: var(--color-accent-soft);
+}
+
+.empty-state {
+  padding: 30px 16px;
+  text-align: center;
+  color: var(--color-text-muted);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius);
+  font-size: 0.92rem;
+}
+
+.count-row {
+  margin-top: 14px;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.clear-done {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  text-decoration: underline;
+  padding: 0;
+}
+.clear-done:hover { color: var(--color-accent-dark); }
+
+.site-footer {
+  border-top: 1px solid var(--color-border);
+  padding: 22px 0 40px;
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+.site-footer a { color: var(--color-text-muted); }
+.site-footer a:hover { color: var(--color-accent-dark); }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="topbar">
+    <a class="brand" href="https://yefraim85.github.io/yaniv-efraim-kb/index.html">יניב אפרים <small>מאגר ידע אישי</small></a>
+    <button type="button" class="theme-toggle" id="theme-toggle" aria-pressed="false">☀️ <span>מצב בהיר</span></button>
+  </div>
+
+  <header class="article-header">
+    <p class="eyebrow">פתק אישי</p>
+    <h1>רשימת משימות לאתר</h1>
+    <div class="article-meta">
+      <span id="updated-label">עודכן לאחרונה 6 ביולי 2026</span>
+    </div>
+  </header>
+
+  <main>
+    <p class="intro">
+      כאן ארשום דברים שאני רוצה להוסיף או לשנות במאגר — לא תוכן לקוראים,
+      רק פתק עבודה לעצמי.
+    </p>
+
+    <form class="add-row" id="add-form">
+      <input type="text" id="new-task" placeholder="הוסיפו משימה חדשה..." autocomplete="off">
+      <button type="submit">הוספה</button>
+    </form>
+
+    <ul class="task-list" id="task-list"></ul>
+    <div class="empty-state" id="empty-state" hidden>אין משימות כרגע. תהנו מהשקט.</div>
+
+    <div class="count-row">
+      <span id="count-label"></span>
+      <button type="button" class="clear-done" id="clear-done" hidden>נקה משימות שהושלמו</button>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <span>עמוד עצמאי, מבוסס על דף המשימות ב<a href="https://yefraim85.github.io/yaniv-efraim-kb/tasks/index.html">מאגר הידע האישי</a>. המשימות נשמרות בדפדפן הזה בלבד.</span>
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  var STORAGE_KEY = 'yaniv-tasks-v1';
+  var UPDATED_KEY = 'yaniv-tasks-updated';
+  var DEFAULT_TASKS = [
+    { text: 'לדוגמה: לכתוב את הכתבה הראשונה בקטגוריית "פיתוח אישי"', done: false }
+  ];
+
+  var listEl = document.getElementById('task-list');
+  var emptyEl = document.getElementById('empty-state');
+  var countEl = document.getElementById('count-label');
+  var clearBtn = document.getElementById('clear-done');
+  var formEl = document.getElementById('add-form');
+  var inputEl = document.getElementById('new-task');
+  var updatedEl = document.getElementById('updated-label');
+
+  function loadTasks() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    return DEFAULT_TASKS.slice();
+  }
+
+  function saveTasks(tasks) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    var now = new Date();
+    localStorage.setItem(UPDATED_KEY, now.toISOString());
+    renderUpdated(now);
+  }
+
+  var HEB_MONTHS = ['בינואר', 'בפברואר', 'במרץ', 'באפריל', 'במאי', 'ביוני', 'ביולי', 'באוגוסט', 'בספטמבר', 'באוקטובר', 'בנובמבר', 'בדצמבר'];
+  function renderUpdated(date) {
+    updatedEl.textContent = 'עודכן לאחרונה ' + date.getDate() + ' ' + HEB_MONTHS[date.getMonth()] + ' ' + date.getFullYear();
+  }
+
+  function initUpdated() {
+    var raw = localStorage.getItem(UPDATED_KEY);
+    if (raw) {
+      renderUpdated(new Date(raw));
+    }
+  }
+
+  var tasks = loadTasks();
+
+  function render() {
+    listEl.innerHTML = '';
+    if (tasks.length === 0) {
+      emptyEl.hidden = false;
+    } else {
+      emptyEl.hidden = true;
+      tasks.forEach(function (task, idx) {
+        var li = document.createElement('li');
+        if (task.done) li.classList.add('done');
+
+        var check = document.createElement('span');
+        check.className = 'check';
+        check.textContent = task.done ? '✓' : '';
+        check.addEventListener('click', function () {
+          tasks[idx].done = !tasks[idx].done;
+          saveTasks(tasks);
+          render();
+        });
+
+        var text = document.createElement('span');
+        text.className = 'task-text';
+        text.textContent = task.text;
+
+        var del = document.createElement('button');
+        del.type = 'button';
+        del.className = 'del-btn';
+        del.setAttribute('aria-label', 'מחיקת משימה');
+        del.textContent = '✕';
+        del.addEventListener('click', function () {
+          tasks.splice(idx, 1);
+          saveTasks(tasks);
+          render();
+        });
+
+        li.appendChild(check);
+        li.appendChild(text);
+        li.appendChild(del);
+        listEl.appendChild(li);
+      });
+    }
+
+    var doneCount = tasks.filter(function (t) { return t.done; }).length;
+    countEl.textContent = tasks.length ? (tasks.length + ' משימות, ' + doneCount + ' הושלמו') : '';
+    clearBtn.hidden = doneCount === 0;
+  }
+
+  formEl.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var val = inputEl.value.trim();
+    if (!val) return;
+    tasks.push({ text: val, done: false });
+    saveTasks(tasks);
+    inputEl.value = '';
+    render();
+  });
+
+  clearBtn.addEventListener('click', function () {
+    tasks = tasks.filter(function (t) { return !t.done; });
+    saveTasks(tasks);
+    render();
+  });
+
+  // Theme toggle
+  var toggleBtn = document.getElementById('theme-toggle');
+  function applyTheme(theme) {
+    if (theme === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+      toggleBtn.setAttribute('aria-pressed', 'true');
+      toggleBtn.innerHTML = '🌙 <span>מצב כהה</span>';
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+      toggleBtn.setAttribute('aria-pressed', 'false');
+      toggleBtn.innerHTML = '☀️ <span>מצב בהיר</span>';
+    }
+  }
+  try {
+    applyTheme(localStorage.getItem('kb-theme') === 'light' ? 'light' : 'dark');
+  } catch (e) {}
+  toggleBtn.addEventListener('click', function () {
+    var isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    var next = isLight ? 'dark' : 'light';
+    applyTheme(next);
+    try { localStorage.setItem('kb-theme', next); } catch (e) {}
+  });
+
+  initUpdated();
+  render();
+})();
+</script>
+
+</body>
+</html>
