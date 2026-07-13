@@ -492,10 +492,11 @@ ul.task-list li .del-btn:hover {
     return decodeURIComponent(escape(atob(str.replace(/\n/g, ''))));
   }
 
-  function authHeaders() {
+  function authHeaders(withJsonBody) {
     var headers = { 'Accept': 'application/vnd.github+json' };
     var token = getToken();
     if (token) headers['Authorization'] = 'token ' + token;
+    if (withJsonBody) headers['Content-Type'] = 'application/json';
     return headers;
   }
 
@@ -610,7 +611,11 @@ ul.task-list li .del-btn:hover {
     setSyncState('saving', 'שומר ל-GitHub...');
 
     fetch(GH_API_URL + '?ref=' + GH_BRANCH, { headers: authHeaders() })
-      .then(function (resp) { return resp.ok ? resp.json() : null; })
+      .then(function (resp) {
+        if (resp.status === 404) return null;
+        if (!resp.ok) throw new Error('GET tasks.json: HTTP ' + resp.status);
+        return resp.json();
+      })
       .then(function (existing) {
         var payload = { tasks: pushTasks, updatedAt: new Date().toISOString() };
         var body = {
@@ -621,16 +626,22 @@ ul.task-list li .del-btn:hover {
         if (existing && existing.sha) body.sha = existing.sha;
         return fetch(GH_API_URL, {
           method: 'PUT',
-          headers: authHeaders(),
+          headers: authHeaders(true),
           body: JSON.stringify(body)
         });
       })
       .then(function (resp) {
-        if (!resp.ok) throw new Error('push failed: ' + resp.status);
-        setSyncState('synced', 'מסונכרן עם GitHub');
+        if (resp.ok) {
+          setSyncState('synced', 'מסונכרן עם GitHub');
+          return;
+        }
+        return resp.json().catch(function () { return {}; }).then(function (errBody) {
+          throw new Error('HTTP ' + resp.status + (errBody && errBody.message ? ' — ' + errBody.message : ''));
+        });
       })
-      .catch(function () {
-        setSyncState('error', 'שגיאת סנכרון — ננסה שוב בעדכון הבא');
+      .catch(function (err) {
+        console.error('yaniv-tasks sync error:', err);
+        setSyncState('error', 'שגיאת סנכרון (' + (err && err.message ? err.message : 'unknown') + ')');
       })
       .then(function () {
         syncInFlight = false;
@@ -646,7 +657,7 @@ ul.task-list li .del-btn:hover {
     setSyncState('saving', 'טוען משימות מ-GitHub...');
     fetch(GH_API_URL + '?ref=' + GH_BRANCH, { headers: authHeaders() })
       .then(function (resp) {
-        if (!resp.ok) throw new Error('pull failed: ' + resp.status);
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
         return resp.json();
       })
       .then(function (data) {
@@ -659,8 +670,9 @@ ul.task-list li .del-btn:hover {
         }
         setSyncState('synced', token ? 'מסונכרן עם GitHub' : 'נקרא מ-GitHub (צפייה בלבד)');
       })
-      .catch(function () {
-        setSyncState(token ? 'error' : 'offline', token ? 'שגיאת סנכרון' : 'לא ניתן לטעון מ-GitHub — מוצגים נתונים מקומיים');
+      .catch(function (err) {
+        console.error('yaniv-tasks pull error:', err);
+        setSyncState(token ? 'error' : 'offline', token ? ('שגיאת סנכרון (' + (err && err.message ? err.message : 'unknown') + ')') : 'לא ניתן לטעון מ-GitHub — מוצגים נתונים מקומיים');
       });
   }
 
